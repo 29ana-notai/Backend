@@ -51,9 +51,9 @@ token: # todo production에서 secretKey 변경
 
 file:
   audio:
-    basePath: /app/audio/
+    basePath: audio/
   pdf:
-    basePath: /app/pdf/
+    basePath: pdf/
 
 tesseract:
   library:
