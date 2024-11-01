@@ -38,6 +38,7 @@ public enum ErrorMessages {
     // external api call
     KAKAO_API_ERROR("카카오 API 호출에 예외가 발생했습니다."), 
     AI_SERVER_ERROR("AI 서버 API 호출에 예외가 발생했습니다."),
+    SLACK_API_ERROR("슬랙 API 호출에 예외가 발생했습니다."),
 
     // auth
     INVALID_ACCESS_TOKEN("유효하지 않은 토큰입니다."), 
