@@ -15,6 +15,7 @@ import notai.stt.domain.Stt;
 import notai.stt.domain.SttRepository;
 import notai.sttTask.domain.SttTask;
 import notai.sttTask.domain.SttTaskRepository;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,7 +37,14 @@ public class SttTaskService {
         File audioFile = validateAudioFile(command.audioFilePath());
 
         try (FileInputStream fileInputStream = new FileInputStream(audioFile)) {
-            TaskResponse response = aiClient.submitSttTask(fileInputStream);
+            InputStreamResource resource = new InputStreamResource(fileInputStream) {
+                @Override
+                public String getFilename() {
+                    return audioFile.getName();
+                }
+            };
+            
+            TaskResponse response = aiClient.submitSttTask(resource);
             createAndSaveSttTask(recording, response);
         } catch (IOException e) {
             throw new FileProcessException(FILE_READ_ERROR);
