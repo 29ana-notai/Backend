@@ -22,11 +22,6 @@ public class FilePath {
     }
 
     public static FilePath from(String filePath) {
-        // 추후 확장자 추가
-        if (!filePath.matches(
-                "[a-zA-Z0-9ㄱ-ㅎㅏ-ㅣ가-힣()\\[\\]+\\-&/_\\s]+(/[a-zA-Z0-9ㄱ-ㅎㅏ-ㅣ가-힣()\\[\\]+\\-&/_\\s]+)*/?[a-zA-Z0-9ㄱ-ㅎㅏ-ㅣ가-힣()\\[\\]+\\-&/_\\s]+\\.mp3")) {
-            throw new BadRequestException(INVALID_FILE_TYPE);
-        }
         return new FilePath(filePath);
     }
 }
