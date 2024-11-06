@@ -82,6 +82,7 @@ public class LlmTaskService {
         if (foundSummary.isPresent() && foundProblem.isPresent()) {
             LlmTask foundTaskRecord = llmTaskRepository.getBySummaryAndProblem(foundSummary.get(), foundProblem.get());
             llmTaskRepository.delete(foundTaskRecord);
+            llmTaskRepository.flush();
 
             LlmTask taskRecord = new LlmTask(taskId, foundSummary.get(), foundProblem.get());
             llmTaskRepository.save(taskRecord);
