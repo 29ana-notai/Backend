@@ -14,7 +14,7 @@ import static notai.common.exception.ErrorMessages.INVALID_FILE_TYPE;
 @NoArgsConstructor(access = PROTECTED)
 public class FilePath {
 
-    @Column(length = 50)
+    @Column(length = 255)
     private String filePath;
 
     private FilePath(String filePath) {
