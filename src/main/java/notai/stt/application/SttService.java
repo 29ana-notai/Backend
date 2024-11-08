@@ -1,7 +1,6 @@
 package notai.stt.application;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import notai.pageRecording.domain.PageRecording;
 import notai.pageRecording.domain.PageRecordingRepository;
 import notai.recording.domain.Recording;
@@ -16,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -36,9 +34,7 @@ public class SttService {
         Stt stt = sttTask.getStt();
         Recording recording = stt.getRecording();
 
-        log.info("STT result update for recording: {}", recording.getId());
         List<PageRecording> pageRecordings = pageRecordingRepository.findAllByRecordingIdOrderByStartTime(recording.getId());
-        log.info("Page recordings: {}", pageRecordings);
 
         SttPageMatchedDto matchedResult = stt.matchWordsWithPages(command.words(), pageRecordings);
         List<Stt> pageMatchedSttResults = Stt.createFromMatchedResult(recording, matchedResult);
