@@ -5,11 +5,13 @@ import notai.document.application.result.DocumentFindResult;
 import notai.document.domain.Document;
 import notai.document.domain.DocumentRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class DocumentQueryService {
 
     private final DocumentRepository documentRepository;
