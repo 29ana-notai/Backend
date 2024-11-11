@@ -16,7 +16,6 @@ import notai.folder.presentation.request.FolderMoveRequest;
 import notai.folder.presentation.request.FolderSaveRequest;
 import notai.folder.presentation.request.FolderUpdateRequest;
 import notai.folder.presentation.response.*;
-import notai.member.domain.Member;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,67 +36,67 @@ public class FolderController {
 
     @PostMapping
     public ResponseEntity<FolderSaveResponse> saveFolder(
-            @Auth Member member, @Valid @RequestBody FolderSaveRequest folderSaveRequest
+            @Auth Long memberId, @Valid @RequestBody FolderSaveRequest folderSaveRequest
     ) {
-        FolderSaveResult folderResult = saveFolderResult(member, folderSaveRequest);
+        FolderSaveResult folderResult = saveFolderResult(memberId, folderSaveRequest);
         FolderSaveResponse response = FolderSaveResponse.from(folderResult);
         return ResponseEntity.created(URI.create("/api/folders/" + response.id())).body(response);
     }
 
     @PostMapping("/{id}/move")
     public ResponseEntity<FolderMoveResponse> moveFolder(
-            @Auth Member member, @PathVariable Long id, @Valid @RequestBody FolderMoveRequest folderMoveRequest
+            @Auth Long memberId, @PathVariable Long id, @Valid @RequestBody FolderMoveRequest folderMoveRequest
     ) {
-        FolderMoveResult folderResult = moveFolderWithRequest(member, id, folderMoveRequest);
+        FolderMoveResult folderResult = moveFolderWithRequest(memberId, id, folderMoveRequest);
         FolderMoveResponse response = FolderMoveResponse.from(folderResult);
         return ResponseEntity.ok(response);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<FolderUpdateResponse> updateFolder(
-            @Auth Member member, @PathVariable Long id, @Valid @RequestBody FolderUpdateRequest folderUpdateRequest
+            @Auth Long memberId, @PathVariable Long id, @Valid @RequestBody FolderUpdateRequest folderUpdateRequest
     ) {
-        FolderUpdateResult folderResult = folderService.updateFolder(member, id, folderUpdateRequest);
+        FolderUpdateResult folderResult = folderService.updateFolder(memberId, id, folderUpdateRequest);
         FolderUpdateResponse response = FolderUpdateResponse.from(folderResult);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<List<FindResponseWrapper>> getFolders(
-            @Auth Member member, @PathVariable Long id
+            @Auth Long memberId, @PathVariable Long id
     ) {
         List<FindResponseWrapper> result = new ArrayList<>();
 
-        insertFolderFindResponse(result, member, id);
-        insertDocumentFindResponse(result, member, id);
+        insertFolderFindResponse(result, memberId, id);
+        insertDocumentFindResponse(result, memberId, id);
 
         return ResponseEntity.ok(result);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteFolder(
-            @Auth Member member, @PathVariable Long id
+            @Auth Long memberId, @PathVariable Long id
     ) {
-        folderService.deleteFolder(member, id);
+        folderService.deleteFolder(memberId, id);
         return ResponseEntity.noContent().build();
     }
 
-    private FolderSaveResult saveFolderResult(Member member, FolderSaveRequest folderSaveRequest) {
+    private FolderSaveResult saveFolderResult(Long memberId, FolderSaveRequest folderSaveRequest) {
         if (folderSaveRequest.parentFolderId() != null) {
-            return folderService.saveSubFolder(member, folderSaveRequest);
+            return folderService.saveSubFolder(memberId, folderSaveRequest);
         }
-        return folderService.saveRootFolder(member, folderSaveRequest);
+        return folderService.saveRootFolder(memberId, folderSaveRequest);
     }
 
-    private FolderMoveResult moveFolderWithRequest(Member member, Long id, FolderMoveRequest folderMoveRequest) {
+    private FolderMoveResult moveFolderWithRequest(Long memberId, Long id, FolderMoveRequest folderMoveRequest) {
         if (folderMoveRequest.targetFolderId() != null) {
-            return folderService.moveNewParentFolder(member, id, folderMoveRequest);
+            return folderService.moveNewParentFolder(memberId, id, folderMoveRequest);
         }
-        return folderService.moveRootFolder(member, id);
+        return folderService.moveRootFolder(memberId, id);
     }
 
-    private void insertFolderFindResponse(List<FindResponseWrapper> result, Member member, Long folderId) {
-        List<FolderFindResult> folderResults = folderQueryService.getFolders(member, folderId);
+    private void insertFolderFindResponse(List<FindResponseWrapper> result, Long memberId, Long folderId) {
+        List<FolderFindResult> folderResults = folderQueryService.getFolders(memberId, folderId);
         List<FolderFindResponse> folderResponses = folderResults.stream().map(FolderFindResponse::from).toList();
 
         for (FolderFindResponse response : folderResponses) {
@@ -105,10 +104,10 @@ public class FolderController {
         }
     }
 
-    private void insertDocumentFindResponse(List<FindResponseWrapper> result, Member member, Long folderId) {
+    private void insertDocumentFindResponse(List<FindResponseWrapper> result, Long memberId, Long folderId) {
         List<DocumentFindResult> documentResults;
         if (folderId == null || folderId.equals(ROOT_ID)) {
-            documentResults = documentQueryService.findRootDocuments(member.getId());
+            documentResults = documentQueryService.findRootDocuments(memberId);
         } else {
             documentResults = documentQueryService.findDocuments(folderId);
         }

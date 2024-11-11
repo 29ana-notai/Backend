@@ -65,7 +65,7 @@ class LlmTaskQueryServiceTest {
         // when & then
         assertAll(() -> assertThrows(
                 NotFoundException.class,
-                () -> llmTaskQueryService.fetchOverallStatus(member, 2L)
+                () -> llmTaskQueryService.fetchOverallStatus(member.getId(), 2L)
         ));
     }
 
@@ -84,7 +84,7 @@ class LlmTaskQueryServiceTest {
         given(llmTaskQueryRepository.getTaskStatusBySummaryId(3L)).willReturn(COMPLETED);
 
         // when
-        LlmTaskOverallStatusResult result = llmTaskQueryService.fetchOverallStatus(member, documentId);
+        LlmTaskOverallStatusResult result = llmTaskQueryService.fetchOverallStatus(member.getId(), documentId);
 
         // then
         assertAll(
@@ -111,7 +111,7 @@ class LlmTaskQueryServiceTest {
         given(llmTaskQueryRepository.getTaskStatusBySummaryId(3L)).willReturn(PENDING);
 
         // when
-        LlmTaskOverallStatusResult result = llmTaskQueryService.fetchOverallStatus(member, documentId);
+        LlmTaskOverallStatusResult result = llmTaskQueryService.fetchOverallStatus(member.getId(), documentId);
 
         // then
         assertAll(
@@ -138,7 +138,7 @@ class LlmTaskQueryServiceTest {
         given(llmTaskQueryRepository.getTaskStatusBySummaryId(summaryId)).willReturn(IN_PROGRESS);
 
         // when
-        LlmTaskPageStatusResult result = llmTaskQueryService.fetchPageStatus(member, command);
+        LlmTaskPageStatusResult result = llmTaskQueryService.fetchPageStatus(member.getId(), command);
 
         // then
         assertThat(result.status()).isEqualTo(IN_PROGRESS);
@@ -157,7 +157,7 @@ class LlmTaskQueryServiceTest {
         given(summaryRepository.getSummaryIdByDocumentIdAndPageNumber(documentId, pageNumber)).willReturn(null);
 
         // when
-        LlmTaskPageStatusResult result = llmTaskQueryService.fetchPageStatus(member, command);
+        LlmTaskPageStatusResult result = llmTaskQueryService.fetchPageStatus(member.getId(), command);
 
         // then
         assertThat(result.status()).isEqualTo(NOT_REQUESTED);
@@ -171,7 +171,7 @@ class LlmTaskQueryServiceTest {
         // when & then
         assertAll(() -> assertThrows(
                 NotFoundException.class,
-                () -> llmTaskQueryService.findAllPagesResult(member, 2L)
+                () -> llmTaskQueryService.findAllPagesResult(member.getId(), 2L)
         ));
     }
 
@@ -195,7 +195,7 @@ class LlmTaskQueryServiceTest {
         assertAll(
                 () -> assertThrows(
                         InternalServerErrorException.class,
-                        () -> llmTaskQueryService.findAllPagesResult(member, 1L)
+                        () -> llmTaskQueryService.findAllPagesResult(member.getId(), 1L)
                 ),
                 () -> verify(summaryRepository).getPageNumbersAndContentByDocumentId(documentId),
                 () -> verify(problemRepository).getPageNumbersAndContentByDocumentId(documentId)
@@ -222,7 +222,7 @@ class LlmTaskQueryServiceTest {
         given(problemRepository.getPageNumbersAndContentByDocumentId(documentId)).willReturn(problemResults);
 
         // when
-        LlmTaskAllPagesResult response = llmTaskQueryService.findAllPagesResult(member, documentId);
+        LlmTaskAllPagesResult response = llmTaskQueryService.findAllPagesResult(member.getId(), documentId);
 
         // then
         assertAll(
@@ -251,7 +251,7 @@ class LlmTaskQueryServiceTest {
                 problemResult);
 
         // when
-        LlmTaskPageResult result = llmTaskQueryService.findPageResult(member, command);
+        LlmTaskPageResult result = llmTaskQueryService.findPageResult(member.getId(), command);
 
         // then
         assertAll(
@@ -274,7 +274,7 @@ class LlmTaskQueryServiceTest {
         given(problemRepository.getProblemContentByDocumentIdAndPageNumber(documentId, pageNumber)).willReturn(null);
 
         // when
-        LlmTaskPageResult result = llmTaskQueryService.findPageResult(member, command);
+        LlmTaskPageResult result = llmTaskQueryService.findPageResult(member.getId(), command);
 
         // then
         assertAll(
@@ -299,7 +299,7 @@ class LlmTaskQueryServiceTest {
         given(problemRepository.getProblemContentByDocumentIdAndPageNumber(documentId, pageNumber)).willReturn(null);
 
         // when & then
-        assertThrows(InternalServerErrorException.class, () -> llmTaskQueryService.findPageResult(member, command));
+        assertThrows(InternalServerErrorException.class, () -> llmTaskQueryService.findPageResult(member.getId(), command));
     }
 
     @Test
@@ -313,7 +313,7 @@ class LlmTaskQueryServiceTest {
         willDoNothing().given(document).validateOwner(member);
 
         // when
-        LlmTaskOverallStatusResult result = llmTaskQueryService.fetchOverallStatus(member, documentId);
+        LlmTaskOverallStatusResult result = llmTaskQueryService.fetchOverallStatus(member.getId(), documentId);
 
         // then
         assertAll(
@@ -334,7 +334,7 @@ class LlmTaskQueryServiceTest {
         willDoNothing().given(document).validateOwner(member);
 
         // when
-        LlmTaskAllPagesResult result = llmTaskQueryService.findAllPagesResult(member, documentId);
+        LlmTaskAllPagesResult result = llmTaskQueryService.findAllPagesResult(member.getId(), documentId);
 
         // then
         assertAll(

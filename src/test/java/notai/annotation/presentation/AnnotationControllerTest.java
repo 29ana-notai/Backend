@@ -66,7 +66,7 @@ class AnnotationControllerTest {
         LocalDateTime now = LocalDateTime.now();
         AnnotationResponse response = new AnnotationResponse(1L, 1L, 1, 100, 200, 300, 100, "<span class=\"bold\">굵은글씨</span>", now.toString(), now.toString());
 
-        when(annotationService.createAnnotation(any(Member.class), anyLong(), anyInt(), anyInt(), anyInt(), anyInt(), anyInt(), anyString()))
+        when(annotationService.createAnnotation(any(Long.class), anyLong(), anyInt(), anyInt(), anyInt(), anyInt(), anyInt(), anyString()))
                 .thenReturn(response);
 
         mockMvc.perform(post("/api/documents/1/annotations")
@@ -93,7 +93,7 @@ class AnnotationControllerTest {
                 new AnnotationResponse(2L, 1L, 2, 150, 250, 350, 120, "", now.toString(), now.toString())
         );
 
-        when(annotationQueryService.getAnnotationsByDocumentAndPageNumbers(any(Member.class), anyLong(), anyList())).thenReturn(responses);
+        when(annotationQueryService.getAnnotationsByDocumentAndPageNumbers(any(Long.class), anyLong(), anyList())).thenReturn(responses);
 
         mockMvc.perform(get("/api/documents/1/annotations?pageNumbers=1,2")
                         .contentType("application/json")
@@ -122,7 +122,7 @@ class AnnotationControllerTest {
         LocalDateTime now = LocalDateTime.now();
         AnnotationResponse response = new AnnotationResponse(1L, 1L, 1, 150, 250, 350, 120, "수정된 주석", now.toString(), now.toString());
 
-        when(annotationService.updateAnnotation(any(Member.class), anyLong(), anyLong(), anyInt(), anyInt(), anyInt(), anyInt(), anyString()))
+        when(annotationService.updateAnnotation(any(Long.class), anyLong(), anyLong(), anyInt(), anyInt(), anyInt(), anyInt(), anyString()))
                 .thenReturn(response);
 
         mockMvc.perform(put("/api/documents/1/annotations/1")
@@ -142,13 +142,13 @@ class AnnotationControllerTest {
 
     @Test
     void testDeleteAnnotation_success() throws Exception {
-        doNothing().when(annotationService).deleteAnnotation(any(Member.class), anyLong(), anyLong());
+        doNothing().when(annotationService).deleteAnnotation(any(Long.class), anyLong(), anyLong());
 
         mockMvc.perform(delete("/api/documents/1/annotations/1")
                         .contentType("application/json")
                         .header("Authorization", "Bearer token"))
                .andExpect(status().isOk());
 
-        verify(annotationService, times(1)).deleteAnnotation(any(Member.class),anyLong(), anyLong());
+        verify(annotationService, times(1)).deleteAnnotation(any(Long.class),anyLong(), anyLong());
     }
 }

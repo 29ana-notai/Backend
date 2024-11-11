@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import notai.document.domain.Document;
 import notai.document.domain.DocumentRepository;
 import notai.member.domain.Member;
+import notai.member.domain.MemberRepository;
 import notai.pageRecording.application.command.PageRecordingSaveCommand;
 import notai.pageRecording.domain.PageRecording;
 import notai.pageRecording.domain.PageRecordingRepository;
@@ -20,10 +21,13 @@ public class PageRecordingService {
     private final PageRecordingRepository pageRecordingRepository;
     private final RecordingRepository recordingRepository;
     private final DocumentRepository documentRepository;
+    private final MemberRepository memberRepository;
 
-    public void savePageRecording(Member member, PageRecordingSaveCommand command) {
+    public void savePageRecording(Long memberId, PageRecordingSaveCommand command) {
         Recording foundRecording = recordingRepository.getById(command.recordingId());
         Document foundDocument = documentRepository.getById(command.documentId());
+        Member member = memberRepository.getById(memberId);
+
         foundDocument.validateOwner(member);
         foundRecording.validateDocumentOwnership(foundDocument);
 

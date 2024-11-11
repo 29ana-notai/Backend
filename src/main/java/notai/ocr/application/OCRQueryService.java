@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import static notai.common.exception.ErrorMessages.OCR_RESULT_NOT_FOUND;
 import notai.common.exception.type.NotFoundException;
 import notai.member.domain.Member;
+import notai.member.domain.MemberRepository;
 import notai.ocr.application.result.OCRFindResult;
 import notai.ocr.domain.OCR;
 import notai.ocr.domain.OCRRepository;
@@ -16,8 +17,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class OCRQueryService {
 
     private final OCRRepository ocrRepository;
+    private final MemberRepository memberRepository;
 
-    public OCRFindResult findOCR(Member member, Long documentId, Integer pageNumber) {
+    public OCRFindResult findOCR(Long memberId, Long documentId, Integer pageNumber) {
+        Member member = memberRepository.getById(memberId);
+
         OCR ocr = ocrRepository.findOCRByDocumentIdAndPageNumber(
                 documentId,
                 pageNumber

@@ -18,17 +18,17 @@ public class FolderQueryService {
     private final FolderRepository folderRepository;
     private static final Long ROOT_ID = -1L;
 
-    public List<FolderFindResult> getFolders(Member member, Long folderId) {
-        List<Folder> folders = getFoldersWithMemberAndParent(member, folderId);
+    public List<FolderFindResult> getFolders(Long memberId, Long folderId) {
+        List<Folder> folders = getFoldersWithMemberAndParent(memberId, folderId);
         // document read
         return folders.stream().map(this::getFolderResult).toList();
     }
 
-    private List<Folder> getFoldersWithMemberAndParent(Member member, Long folderId) {
+    private List<Folder> getFoldersWithMemberAndParent(Long memberId, Long folderId) {
         if (folderId == null || folderId.equals(ROOT_ID)) {
-            return folderRepository.findAllByMemberIdAndParentFolderIsNull(member.getId());
+            return folderRepository.findAllByMemberIdAndParentFolderIsNull(memberId);
         }
-        return folderRepository.findAllByMemberIdAndParentFolderId(member.getId(), folderId);
+        return folderRepository.findAllByMemberIdAndParentFolderId(memberId, folderId);
     }
 
     private FolderFindResult getFolderResult(Folder folder) {
