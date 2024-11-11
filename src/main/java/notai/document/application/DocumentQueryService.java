@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import notai.document.application.result.DocumentFindResult;
 import notai.document.domain.Document;
 import notai.document.domain.DocumentRepository;
+import notai.member.domain.Member;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

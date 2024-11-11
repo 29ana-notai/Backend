@@ -56,7 +56,6 @@ public class DocumentService {
     ) {
         Document document = documentRepository.getById(documentId);
         Member member = memberRepository.getById(memberId);
-
         document.validateOwner(member);
 
         if (!folderId.equals(ROOT_FOLDER_ID)) {
@@ -72,7 +71,6 @@ public class DocumentService {
     ) {
         Document document = documentRepository.getById(documentId);
         Member member = memberRepository.getById(memberId);
-
         document.validateOwner(member);
 
         if (!folderId.equals(ROOT_FOLDER_ID)) {
@@ -94,8 +92,8 @@ public class DocumentService {
     private Document saveAndReturnDocument(
             Long memberId, Long folderId, DocumentSaveRequest documentSaveRequest, PdfSaveResult pdfSaveResult
     ) {
-        Member member = memberRepository.getById(memberId);
         Folder folder = folderRepository.getById(folderId);
+        Member member = memberRepository.getById(memberId);
         Document document = new Document(folder,
                 member,
                 documentSaveRequest.name(),
