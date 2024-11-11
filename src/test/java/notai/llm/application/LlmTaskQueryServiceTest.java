@@ -2,7 +2,6 @@ package notai.llm.application;
 
 import notai.common.exception.type.InternalServerErrorException;
 import notai.common.exception.type.NotFoundException;
-import notai.document.domain.Document;
 import notai.document.domain.DocumentRepository;
 import notai.llm.application.command.LlmTaskPageResultCommand;
 import notai.llm.application.command.LlmTaskPageStatusCommand;
@@ -10,28 +9,25 @@ import notai.llm.application.result.LlmTaskAllPagesResult;
 import notai.llm.application.result.LlmTaskOverallStatusResult;
 import notai.llm.application.result.LlmTaskPageResult;
 import notai.llm.application.result.LlmTaskPageStatusResult;
+import static notai.llm.domain.TaskStatus.*;
 import notai.llm.query.LlmTaskQueryRepository;
-import notai.member.domain.Member;
 import notai.problem.domain.ProblemRepository;
 import notai.problem.query.result.ProblemPageContentResult;
 import notai.summary.domain.SummaryRepository;
 import notai.summary.query.result.SummaryPageContentResult;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.BDDMockito.given;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import static org.mockito.Mockito.verify;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Collections;
 import java.util.List;
-
-import static notai.llm.domain.TaskStatus.*;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.willDoNothing;
-import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class LlmTaskQueryServiceTest {
@@ -51,22 +47,15 @@ class LlmTaskQueryServiceTest {
     @Mock
     private ProblemRepository problemRepository;
 
-    @Mock
-    private Member member;
-
-    @Mock
-    private Document document;
-
     @Test
     void 작업_상태_확인시_존재하지_않는_문서ID로_요청한_경우_예외_발생() {
         // given
-        given(documentRepository.getById(eq(2L))).willThrow(NotFoundException.class);
+        given(documentRepository.existsById(anyLong())).willReturn(false);
 
         // when & then
-        assertAll(() -> assertThrows(
-                NotFoundException.class,
-                () -> llmTaskQueryService.fetchOverallStatus(member, 2L)
-        ));
+        assertAll(() -> assertThrows(NotFoundException.class, () -> llmTaskQueryService.fetchOverallStatus(1L)),
+                () -> verify(documentRepository).existsById(anyLong())
+        );
     }
 
     @Test
@@ -75,22 +64,20 @@ class LlmTaskQueryServiceTest {
         Long documentId = 1L;
         List<Long> summaryIds = List.of(1L, 2L, 3L);
 
-        given(documentRepository.getById(eq(1L))).willReturn(document);
-        willDoNothing().given(document).validateOwner(member);
-
+        given(documentRepository.existsById(anyLong())).willReturn(true);
         given(summaryRepository.getSummaryIdsByDocumentId(documentId)).willReturn(summaryIds);
         given(llmTaskQueryRepository.getTaskStatusBySummaryId(1L)).willReturn(COMPLETED);
         given(llmTaskQueryRepository.getTaskStatusBySummaryId(2L)).willReturn(COMPLETED);
         given(llmTaskQueryRepository.getTaskStatusBySummaryId(3L)).willReturn(COMPLETED);
 
         // when
-        LlmTaskOverallStatusResult result = llmTaskQueryService.fetchOverallStatus(member, documentId);
+        LlmTaskOverallStatusResult result = llmTaskQueryService.fetchOverallStatus(documentId);
 
         // then
-        assertAll(
-                () -> assertThat(result.overallStatus()).isEqualTo(COMPLETED),
+        assertAll(() -> assertThat(result.overallStatus()).isEqualTo(COMPLETED),
                 () -> assertThat(result.totalPages()).isEqualTo(3),
                 () -> assertThat(result.completedPages()).isEqualTo(3),
+                () -> verify(documentRepository).existsById(documentId),
                 () -> verify(summaryRepository).getSummaryIdsByDocumentId(documentId),
                 () -> verify(llmTaskQueryRepository).getTaskStatusBySummaryId(documentId)
         );
@@ -102,22 +89,20 @@ class LlmTaskQueryServiceTest {
         Long documentId = 1L;
         List<Long> summaryIds = List.of(1L, 2L, 3L);
 
-        given(documentRepository.getById(eq(1L))).willReturn(document);
-        willDoNothing().given(document).validateOwner(member);
-
+        given(documentRepository.existsById(anyLong())).willReturn(true);
         given(summaryRepository.getSummaryIdsByDocumentId(documentId)).willReturn(summaryIds);
         given(llmTaskQueryRepository.getTaskStatusBySummaryId(1L)).willReturn(COMPLETED);
         given(llmTaskQueryRepository.getTaskStatusBySummaryId(2L)).willReturn(IN_PROGRESS);
         given(llmTaskQueryRepository.getTaskStatusBySummaryId(3L)).willReturn(PENDING);
 
         // when
-        LlmTaskOverallStatusResult result = llmTaskQueryService.fetchOverallStatus(member, documentId);
+        LlmTaskOverallStatusResult result = llmTaskQueryService.fetchOverallStatus(documentId);
 
         // then
-        assertAll(
-                () -> assertThat(result.overallStatus()).isEqualTo(IN_PROGRESS),
+        assertAll(() -> assertThat(result.overallStatus()).isEqualTo(IN_PROGRESS),
                 () -> assertThat(result.totalPages()).isEqualTo(3),
                 () -> assertThat(result.completedPages()).isEqualTo(1),
+                () -> verify(documentRepository).existsById(documentId),
                 () -> verify(summaryRepository).getSummaryIdsByDocumentId(documentId),
                 () -> verify(llmTaskQueryRepository).getTaskStatusBySummaryId(documentId)
         );
@@ -131,14 +116,12 @@ class LlmTaskQueryServiceTest {
         Integer pageNumber = 20;
         LlmTaskPageStatusCommand command = new LlmTaskPageStatusCommand(documentId, pageNumber);
 
-        given(documentRepository.getById(eq(1L))).willReturn(document);
-        willDoNothing().given(document).validateOwner(member);
-
+        given(documentRepository.existsById(anyLong())).willReturn(true);
         given(summaryRepository.getSummaryIdByDocumentIdAndPageNumber(documentId, pageNumber)).willReturn(summaryId);
         given(llmTaskQueryRepository.getTaskStatusBySummaryId(summaryId)).willReturn(IN_PROGRESS);
 
         // when
-        LlmTaskPageStatusResult result = llmTaskQueryService.fetchPageStatus(member, command);
+        LlmTaskPageStatusResult result = llmTaskQueryService.fetchPageStatus(command);
 
         // then
         assertThat(result.status()).isEqualTo(IN_PROGRESS);
@@ -151,13 +134,11 @@ class LlmTaskQueryServiceTest {
         Integer pageNumber = 20;
         LlmTaskPageStatusCommand command = new LlmTaskPageStatusCommand(documentId, pageNumber);
 
-        given(documentRepository.getById(eq(1L))).willReturn(document);
-        willDoNothing().given(document).validateOwner(member);
-
+        given(documentRepository.existsById(anyLong())).willReturn(true);
         given(summaryRepository.getSummaryIdByDocumentIdAndPageNumber(documentId, pageNumber)).willReturn(null);
 
         // when
-        LlmTaskPageStatusResult result = llmTaskQueryService.fetchPageStatus(member, command);
+        LlmTaskPageStatusResult result = llmTaskQueryService.fetchPageStatus(command);
 
         // then
         assertThat(result.status()).isEqualTo(NOT_REQUESTED);
@@ -166,13 +147,12 @@ class LlmTaskQueryServiceTest {
     @Test
     void 작업_결과_확인시_존재하지_않는_문서ID로_요청한_경우_예외_발생() {
         // given
-        given(documentRepository.getById(eq(2L))).willThrow(NotFoundException.class);
+        given(documentRepository.existsById(anyLong())).willReturn(false);
 
         // when & then
-        assertAll(() -> assertThrows(
-                NotFoundException.class,
-                () -> llmTaskQueryService.findAllPagesResult(member, 2L)
-        ));
+        assertAll(() -> assertThrows(NotFoundException.class, () -> llmTaskQueryService.findAllPagesResult(1L)),
+                () -> verify(documentRepository).existsById(anyLong())
+        );
     }
 
     @Test
@@ -180,23 +160,17 @@ class LlmTaskQueryServiceTest {
         // given
         Long documentId = 1L;
         List<SummaryPageContentResult> summaryResults = List.of(new SummaryPageContentResult(1, "요약 내용"));
-        List<ProblemPageContentResult> problemResults = List.of(
-                new ProblemPageContentResult(1, "문제 내용"),
+        List<ProblemPageContentResult> problemResults = List.of(new ProblemPageContentResult(1, "문제 내용"),
                 new ProblemPageContentResult(2, "문제 내용")
         );
 
-        given(documentRepository.getById(eq(1L))).willReturn(document);
-        willDoNothing().given(document).validateOwner(member);
-
+        given(documentRepository.existsById(anyLong())).willReturn(true);
         given(summaryRepository.getPageNumbersAndContentByDocumentId(documentId)).willReturn(summaryResults);
         given(problemRepository.getPageNumbersAndContentByDocumentId(documentId)).willReturn(problemResults);
 
         // when & then
-        assertAll(
-                () -> assertThrows(
-                        InternalServerErrorException.class,
-                        () -> llmTaskQueryService.findAllPagesResult(member, 1L)
-                ),
+        assertAll(() -> assertThrows(InternalServerErrorException.class, () -> llmTaskQueryService.findAllPagesResult(1L)),
+                () -> verify(documentRepository).existsById(documentId),
                 () -> verify(summaryRepository).getPageNumbersAndContentByDocumentId(documentId),
                 () -> verify(problemRepository).getPageNumbersAndContentByDocumentId(documentId)
         );
@@ -206,28 +180,24 @@ class LlmTaskQueryServiceTest {
     void 작업_결과_확인() {
         // given
         Long documentId = 1L;
-        List<SummaryPageContentResult> summaryResults = List.of(
-                new SummaryPageContentResult(1, "요약 내용"),
+        List<SummaryPageContentResult> summaryResults = List.of(new SummaryPageContentResult(1, "요약 내용"),
                 new SummaryPageContentResult(2, "요약 내용")
         );
-        List<ProblemPageContentResult> problemResults = List.of(
-                new ProblemPageContentResult(1, "문제 내용"),
+        List<ProblemPageContentResult> problemResults = List.of(new ProblemPageContentResult(1, "문제 내용"),
                 new ProblemPageContentResult(2, "문제 내용")
         );
 
-        given(documentRepository.getById(eq(1L))).willReturn(document);
-        willDoNothing().given(document).validateOwner(member);
-
+        given(documentRepository.existsById(anyLong())).willReturn(true);
         given(summaryRepository.getPageNumbersAndContentByDocumentId(documentId)).willReturn(summaryResults);
         given(problemRepository.getPageNumbersAndContentByDocumentId(documentId)).willReturn(problemResults);
 
         // when
-        LlmTaskAllPagesResult response = llmTaskQueryService.findAllPagesResult(member, documentId);
+        LlmTaskAllPagesResult response = llmTaskQueryService.findAllPagesResult(documentId);
 
         // then
-        assertAll(
-                () -> assertEquals(documentId, response.documentId()),
+        assertAll(() -> assertEquals(documentId, response.documentId()),
                 () -> assertEquals(2, response.results().size()),
+                () -> verify(documentRepository).existsById(documentId),
                 () -> verify(summaryRepository).getPageNumbersAndContentByDocumentId(documentId),
                 () -> verify(problemRepository).getPageNumbersAndContentByDocumentId(documentId)
         );
@@ -242,16 +212,12 @@ class LlmTaskQueryServiceTest {
         String problemResult = "문제 내용";
         LlmTaskPageResultCommand command = new LlmTaskPageResultCommand(documentId, pageNumber);
 
-        given(documentRepository.getById(eq(1L))).willReturn(document);
-        willDoNothing().given(document).validateOwner(member);
-
-        given(summaryRepository.getSummaryContentByDocumentIdAndPageNumber(documentId, pageNumber)).willReturn(
-                summaryResult);
-        given(problemRepository.getProblemContentByDocumentIdAndPageNumber(documentId, pageNumber)).willReturn(
-                problemResult);
+        given(documentRepository.existsById(anyLong())).willReturn(true);
+        given(summaryRepository.getSummaryContentByDocumentIdAndPageNumber(documentId, pageNumber)).willReturn(summaryResult);
+        given(problemRepository.getProblemContentByDocumentIdAndPageNumber(documentId, pageNumber)).willReturn(problemResult);
 
         // when
-        LlmTaskPageResult result = llmTaskQueryService.findPageResult(member, command);
+        LlmTaskPageResult result = llmTaskQueryService.findPageResult(command);
 
         // then
         assertAll(
@@ -267,14 +233,12 @@ class LlmTaskQueryServiceTest {
         Integer pageNumber = 20;
         LlmTaskPageResultCommand command = new LlmTaskPageResultCommand(documentId, pageNumber);
 
-        given(documentRepository.getById(eq(1L))).willReturn(document);
-        willDoNothing().given(document).validateOwner(member);
-
+        given(documentRepository.existsById(anyLong())).willReturn(true);
         given(summaryRepository.getSummaryContentByDocumentIdAndPageNumber(documentId, pageNumber)).willReturn(null);
         given(problemRepository.getProblemContentByDocumentIdAndPageNumber(documentId, pageNumber)).willReturn(null);
 
         // when
-        LlmTaskPageResult result = llmTaskQueryService.findPageResult(member, command);
+        LlmTaskPageResult result = llmTaskQueryService.findPageResult(command);
 
         // then
         assertAll(
@@ -291,15 +255,12 @@ class LlmTaskQueryServiceTest {
         String summaryResult = "요약 내용";
         LlmTaskPageResultCommand command = new LlmTaskPageResultCommand(documentId, pageNumber);
 
-        given(documentRepository.getById(eq(1L))).willReturn(document);
-        willDoNothing().given(document).validateOwner(member);
-
-        given(summaryRepository.getSummaryContentByDocumentIdAndPageNumber(documentId, pageNumber)).willReturn(
-                summaryResult);
+        given(documentRepository.existsById(anyLong())).willReturn(true);
+        given(summaryRepository.getSummaryContentByDocumentIdAndPageNumber(documentId, pageNumber)).willReturn(summaryResult);
         given(problemRepository.getProblemContentByDocumentIdAndPageNumber(documentId, pageNumber)).willReturn(null);
 
         // when & then
-        assertThrows(InternalServerErrorException.class, () -> llmTaskQueryService.findPageResult(member, command));
+        assertThrows(InternalServerErrorException.class, () -> llmTaskQueryService.findPageResult(command));
     }
 
     @Test
@@ -307,13 +268,11 @@ class LlmTaskQueryServiceTest {
         // given
         Long documentId = 1L;
 
+        given(documentRepository.existsById(anyLong())).willReturn(true);
         given(summaryRepository.getSummaryIdsByDocumentId(documentId)).willReturn(Collections.emptyList());
 
-        given(documentRepository.getById(eq(1L))).willReturn(document);
-        willDoNothing().given(document).validateOwner(member);
-
         // when
-        LlmTaskOverallStatusResult result = llmTaskQueryService.fetchOverallStatus(member, documentId);
+        LlmTaskOverallStatusResult result = llmTaskQueryService.fetchOverallStatus(documentId);
 
         // then
         assertAll(
@@ -328,13 +287,11 @@ class LlmTaskQueryServiceTest {
         // given
         Long documentId = 1L;
 
+        given(documentRepository.existsById(anyLong())).willReturn(true);
         given(summaryRepository.getPageNumbersAndContentByDocumentId(documentId)).willReturn(Collections.emptyList());
 
-        given(documentRepository.getById(eq(1L))).willReturn(document);
-        willDoNothing().given(document).validateOwner(member);
-
         // when
-        LlmTaskAllPagesResult result = llmTaskQueryService.findAllPagesResult(member, documentId);
+        LlmTaskAllPagesResult result = llmTaskQueryService.findAllPagesResult(documentId);
 
         // then
         assertAll(

@@ -11,65 +11,67 @@ import notai.folder.presentation.request.FolderMoveRequest;
 import notai.folder.presentation.request.FolderSaveRequest;
 import notai.folder.presentation.request.FolderUpdateRequest;
 import notai.member.domain.Member;
+import notai.member.domain.MemberRepository;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class FolderService {
 
     private final FolderRepository folderRepository;
+    private final MemberRepository memberRepository;
     private final DocumentService documentService;
 
-    public FolderSaveResult saveRootFolder(Member member, FolderSaveRequest folderSaveRequest) {
+    public FolderSaveResult saveRootFolder(Long memberId, FolderSaveRequest folderSaveRequest) {
+        Member member = memberRepository.getById(memberId);
         Folder folder = new Folder(member, folderSaveRequest.name());
         Folder savedFolder = folderRepository.save(folder);
         return getFolderSaveResult(savedFolder);
     }
 
-    public FolderSaveResult saveSubFolder(Member member, FolderSaveRequest folderSaveRequest) {
+    public FolderSaveResult saveSubFolder(Long memberId, FolderSaveRequest folderSaveRequest) {
+        Member member = memberRepository.getById(memberId);
         Folder parentFolder = folderRepository.getById(folderSaveRequest.parentFolderId());
         Folder folder = new Folder(member, folderSaveRequest.name(), parentFolder);
         Folder savedFolder = folderRepository.save(folder);
         return getFolderSaveResult(savedFolder);
     }
 
-    public FolderMoveResult moveRootFolder(Member member, Long id) {
+    public FolderMoveResult moveRootFolder(Long memberId, Long id) {
         Folder folder = folderRepository.getById(id);
-        folder.validateOwner(member);
+        folder.validateOwner(memberId);
         folder.moveRootFolder();
         folderRepository.save(folder);
         return getFolderMoveResult(folder);
     }
 
-    public FolderMoveResult moveNewParentFolder(Member member, Long id, FolderMoveRequest folderMoveRequest) {
+    public FolderMoveResult moveNewParentFolder(Long memberId, Long id, FolderMoveRequest folderMoveRequest) {
         Folder folder = folderRepository.getById(id);
         Folder parentFolder = folderRepository.getById(folderMoveRequest.targetFolderId());
-        folder.validateOwner(member);
+        folder.validateOwner(memberId);
         folder.moveNewParentFolder(parentFolder);
         folderRepository.save(folder);
         return getFolderMoveResult(folder);
     }
 
-    public FolderUpdateResult updateFolder(Member member, Long id, FolderUpdateRequest folderUpdateRequest) {
+    public FolderUpdateResult updateFolder(Long memberId, Long id, FolderUpdateRequest folderUpdateRequest) {
         Folder folder = folderRepository.getById(id);
-        folder.validateOwner(member);
+        folder.validateOwner(memberId);
         folder.updateName(folderUpdateRequest.name());
         folderRepository.save(folder);
         return getFolderUpdateResult(folder);
     }
 
-    public void deleteFolder(Member member, Long id) {
+    public void deleteFolder(Long memberId, Long id) {
         Folder folder = folderRepository.getById(id);
-        folder.validateOwner(member);
+        folder.validateOwner(memberId);
         List<Folder> subFolders = folderRepository.findAllByParentFolder(folder);
         for (Folder subFolder : subFolders) {
-            deleteFolder(member, subFolder.getId());
+            deleteFolder(memberId, subFolder.getId());
         }
-        documentService.deleteAllByFolder(member, folder);
+        documentService.deleteAllByFolder(memberId, folder);
         folderRepository.delete(folder);
     }
 

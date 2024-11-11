@@ -2,8 +2,10 @@ package notai.llm.application;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import static notai.common.exception.ErrorMessages.DOCUMENT_NOT_FOUND;
+import static notai.common.exception.ErrorMessages.LLM_TASK_RESULT_ERROR;
 import notai.common.exception.type.InternalServerErrorException;
-import notai.document.domain.Document;
+import notai.common.exception.type.NotFoundException;
 import notai.document.domain.DocumentRepository;
 import notai.llm.application.command.LlmTaskPageResultCommand;
 import notai.llm.application.command.LlmTaskPageStatusCommand;
@@ -14,8 +16,8 @@ import notai.llm.application.result.LlmTaskOverallStatusResult;
 import notai.llm.application.result.LlmTaskPageResult;
 import notai.llm.application.result.LlmTaskPageStatusResult;
 import notai.llm.domain.TaskStatus;
+import static notai.llm.domain.TaskStatus.*;
 import notai.llm.query.LlmTaskQueryRepository;
-import notai.member.domain.Member;
 import notai.problem.domain.ProblemRepository;
 import notai.problem.query.result.ProblemPageContentResult;
 import notai.summary.domain.SummaryRepository;
@@ -24,9 +26,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.List;
-
-import static notai.common.exception.ErrorMessages.LLM_TASK_RESULT_ERROR;
-import static notai.llm.domain.TaskStatus.*;
 
 @Slf4j
 @Service
@@ -38,10 +37,8 @@ public class LlmTaskQueryService {
     private final SummaryRepository summaryRepository;
     private final ProblemRepository problemRepository;
 
-    public LlmTaskOverallStatusResult fetchOverallStatus(Member member, Long documentId) {
-        Document foundDocument = documentRepository.getById(documentId);
-        foundDocument.validateOwner(member);
-
+    public LlmTaskOverallStatusResult fetchOverallStatus(Long documentId) {
+        checkDocumentExists(documentId);
         List<Long> summaryIds = summaryRepository.getSummaryIdsByDocumentId(documentId);
 
         if (summaryIds.isEmpty()) {
@@ -59,10 +56,8 @@ public class LlmTaskQueryService {
         return LlmTaskOverallStatusResult.of(documentId, IN_PROGRESS, totalPages, completedPages);
     }
 
-    public LlmTaskPageStatusResult fetchPageStatus(Member member, LlmTaskPageStatusCommand command) { // TODO: 페이지 번호 검증 추가
-        Document foundDocument = documentRepository.getById(command.documentId());
-        foundDocument.validateOwner(member);
-
+    public LlmTaskPageStatusResult fetchPageStatus(LlmTaskPageStatusCommand command) { // TODO: 페이지 번호 검증 추가
+        checkDocumentExists(command.documentId());
         Long summaryId =
                 summaryRepository.getSummaryIdByDocumentIdAndPageNumber(command.documentId(), command.pageNumber());
 
@@ -72,9 +67,8 @@ public class LlmTaskQueryService {
         return LlmTaskPageStatusResult.from(llmTaskQueryRepository.getTaskStatusBySummaryId(summaryId));
     }
 
-    public LlmTaskAllPagesResult findAllPagesResult(Member member, Long documentId) {
-        Document foundDocument = documentRepository.getById(documentId);
-        foundDocument.validateOwner(member);
+    public LlmTaskAllPagesResult findAllPagesResult(Long documentId) {
+        checkDocumentExists(documentId);
 
         List<SummaryPageContentResult> summaryResults =
                 summaryRepository.getPageNumbersAndContentByDocumentId(documentId);
@@ -98,9 +92,8 @@ public class LlmTaskQueryService {
         return LlmTaskAllPagesResult.of(documentId, results);
     }
 
-    public LlmTaskPageResult findPageResult(Member member, LlmTaskPageResultCommand command) { // TODO: 페이지 번호 검증 추가
-        Document foundDocument = documentRepository.getById(command.documentId());
-        foundDocument.validateOwner(member);
+    public LlmTaskPageResult findPageResult(LlmTaskPageResultCommand command) { // TODO: 페이지 번호 검증 추가
+        checkDocumentExists(command.documentId());
 
         String summaryResult = summaryRepository.getSummaryContentByDocumentIdAndPageNumber(
                 command.documentId(), command.pageNumber());
@@ -112,10 +105,9 @@ public class LlmTaskQueryService {
         return LlmTaskPageResult.of(summaryResult, problemResult);
     }
 
-    private void checkSummaryAndProblemConsistency(
+    private static void checkSummaryAndProblemConsistency(
             LlmTaskPageResultCommand command, String summaryResult,
-            String problemResult
-    ) {
+                                                          String problemResult) {
         if (summaryResult == null && problemResult != null) {
             log.error("요약과 문제 생성 결과가 매칭되지 않습니다. {} 페이지에 대한 요약 결과가 없습니다.", command.pageNumber());
             throw new InternalServerErrorException(LLM_TASK_RESULT_ERROR);
@@ -127,7 +119,13 @@ public class LlmTaskQueryService {
         }
     }
 
-    private void checkSummaryAndProblemCountsEqual(
+    private void checkDocumentExists(Long documentId) {
+        if (!documentRepository.existsById(documentId)) {
+            throw new NotFoundException(DOCUMENT_NOT_FOUND);
+        }
+    }
+
+    private static void checkSummaryAndProblemCountsEqual(
             List<SummaryPageContentResult> summaryResults, List<ProblemPageContentResult> problemResults
     ) {
         if (summaryResults.size() != problemResults.size()) {

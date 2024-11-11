@@ -6,12 +6,10 @@ import notai.common.utils.AudioDecoder;
 import notai.common.utils.FileManager;
 import notai.document.domain.Document;
 import notai.document.domain.DocumentRepository;
-import notai.member.domain.Member;
 import notai.recording.application.command.RecordingSaveCommand;
 import notai.recording.application.result.RecordingSaveResult;
 import notai.recording.domain.Recording;
 import notai.recording.domain.RecordingRepository;
-import notai.stt.application.SttTaskService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,7 +27,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.willDoNothing;
 import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
@@ -44,17 +41,11 @@ class RecordingServiceTest {
     @Mock
     private DocumentRepository documentRepository;
 
-    @Mock
-    private SttTaskService sttTaskService;
-
     @Spy
     private final AudioDecoder audioDecoder = new AudioDecoder();
 
     @Spy
     private final FileManager fileManager = new FileManager();
-
-    @Mock
-    private Member member;
 
     @BeforeEach
     void setUp() {
@@ -79,7 +70,7 @@ class RecordingServiceTest {
 
         // when & then
         assertThrows(BadRequestException.class, () -> {
-            recordingService.saveRecording(member, command);
+            recordingService.saveRecording(command);
         });
     }
 
@@ -100,10 +91,8 @@ class RecordingServiceTest {
         given(recordingRepository.save(any(Recording.class))).willReturn(savedRecording);
         given(document.getName()).willReturn("안녕하세요백종원입니다");
 
-        willDoNothing().given(sttTaskService).submitSttTask(any());
-
         // when
-        RecordingSaveResult result = recordingService.saveRecording(member, command);
+        RecordingSaveResult result = recordingService.saveRecording(command);
 
         // then
         FilePath filePath = FilePath.from("안녕하세요백종원입니다_1.mp3");
