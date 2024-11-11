@@ -48,8 +48,8 @@ public class MemberController {
 
     @GetMapping("/me")
     public ResponseEntity<MemberFindResponse> findMyProfile(
-            @Auth Long memberId
+            @Auth Member member
     ) {
-        return ResponseEntity.ok(MemberFindResponse.from(memberQueryService.findById(memberId)));
+        return ResponseEntity.ok(MemberFindResponse.from(member));
     }
 }

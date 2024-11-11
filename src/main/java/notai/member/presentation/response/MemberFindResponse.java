@@ -1,12 +1,12 @@
 package notai.member.presentation.response;
 
-import notai.member.application.result.MemberFindResult;
+import notai.member.domain.Member;
 
 public record MemberFindResponse(
         Long id,
         String nickname
 ) {
-    public static MemberFindResponse from(MemberFindResult result) {
-        return new MemberFindResponse(result.id(), result.nickname());
+    public static MemberFindResponse from(Member member) {
+        return new MemberFindResponse(member.getId(), member.getNickname());
     }
 }
