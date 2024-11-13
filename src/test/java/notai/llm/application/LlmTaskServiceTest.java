@@ -17,8 +17,13 @@ import notai.llm.domain.LlmTaskRepository;
 import notai.member.domain.Member;
 import notai.member.domain.OauthId;
 import notai.member.domain.OauthProvider;
+import notai.ocr.domain.OCR;
+import notai.ocr.domain.OCRRepository;
 import notai.problem.domain.Problem;
 import notai.problem.domain.ProblemRepository;
+import notai.recording.domain.Recording;
+import notai.stt.domain.Stt;
+import notai.stt.domain.SttRepository;
 import notai.summary.domain.Summary;
 import notai.summary.domain.SummaryRepository;
 import org.junit.jupiter.api.Test;
@@ -58,6 +63,12 @@ class LlmTaskServiceTest {
     private AnnotationRepository annotationRepository;
 
     @Mock
+    private SttRepository sttRepository;
+
+    @Mock
+    private OCRRepository ocrRepository;
+
+    @Mock
     private AiClient aiClient;
 
     @Test
@@ -94,11 +105,17 @@ class LlmTaskServiceTest {
                 new Annotation(document, 2, 50, 60, 120, 70, "Annotation 3")
         );
 
+        Recording recording = new Recording(document);
+        List<Stt> stts = List.of(new Stt(recording));
+        List<OCR> ocrs = List.of(new OCR(document, 1, "TestDocumentContent"));
+
         UUID taskId = UUID.randomUUID();
         TaskResponse taskResponse = new TaskResponse(taskId, "llm");
 
         given(documentRepository.getById(anyLong())).willReturn(document);
         given(annotationRepository.findByDocumentId(anyLong())).willReturn(annotations);
+        given(sttRepository.findAllByDocumentIdAndPageNumber(any(), anyInt())).willReturn(stts);
+        given(ocrRepository.findAllByDocumentIdAndPageNumber(any(), anyInt())).willReturn(ocrs);
         given(aiClient.submitLlmTask(any(LlmTaskRequest.class))).willReturn(taskResponse);
         given(llmTaskRepository.save(any(LlmTask.class))).willAnswer(invocation -> invocation.getArgument(0));
 
