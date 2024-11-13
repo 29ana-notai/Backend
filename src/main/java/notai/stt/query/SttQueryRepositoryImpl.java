@@ -20,4 +20,13 @@ public class SttQueryRepositoryImpl implements SttQueryRepository {
                         .and(stt.pageNumber.eq(pageNumber)))
                 .fetch();
     }
+
+    @Override
+    public List<Stt> findAllByDocumentId(Long documentId) {
+        return queryFactory
+                .selectFrom(stt)
+                .join(stt.recording).fetchJoin()
+                .where(stt.recording.document.id.eq(documentId))
+                .fetch();
+    }
 }
