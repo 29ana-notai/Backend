@@ -1,6 +1,7 @@
 package notai.stt.presentation;
 
 import lombok.RequiredArgsConstructor;
+import notai.auth.Auth;
 import notai.stt.application.SttQueryService;
 import notai.stt.presentation.response.SttPageResponse;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,9 +17,10 @@ public class SttController {
 
     @GetMapping("/documents/{documentId}/pages/{pageNumber}")
     public SttPageResponse getSttByPage(
+            @Auth Long memberId,
             @PathVariable Long documentId,
             @PathVariable Integer pageNumber
     ) {
-        return sttQueryService.getSttByPage(documentId, pageNumber);
+        return sttQueryService.getSttByPage(memberId, documentId, pageNumber);
     }
 }
