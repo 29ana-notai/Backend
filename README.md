@@ -300,6 +300,7 @@
 
 
 # 🛠️ 기술스택 🛠️
+![image](https://github.com/user-attachments/assets/b001bb8b-950a-493a-900b-3e0094a60194)
 
 
 # ☁️ 추후 개발예정 기능 ☁️
