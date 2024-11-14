@@ -2,8 +2,9 @@ package notai.stt.query;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
-import notai.stt.domain.Stt;
 import static notai.stt.domain.QStt.stt;
+import notai.stt.domain.Stt;
+import static notai.sttTask.domain.QSttTask.sttTask;
 
 import java.util.List;
 
@@ -15,9 +16,9 @@ public class SttQueryRepositoryImpl implements SttQueryRepository {
     public List<Stt> findAllByDocumentIdAndPageNumber(Long documentId, Integer pageNumber) {
         return queryFactory
                 .selectFrom(stt)
-                .join(stt.recording).fetchJoin()
-                .where(stt.recording.document.id.eq(documentId)
-                        .and(stt.pageNumber.eq(pageNumber)))
+                .join(stt.sttTask, sttTask).fetchJoin()
+                .where(stt.sttTask.recording.document.id.eq(documentId)
+                                                        .and(stt.pageNumber.eq(pageNumber)))
                 .fetch();
     }
 
@@ -25,8 +26,8 @@ public class SttQueryRepositoryImpl implements SttQueryRepository {
     public List<Stt> findAllByDocumentId(Long documentId) {
         return queryFactory
                 .selectFrom(stt)
-                .join(stt.recording).fetchJoin()
-                .where(stt.recording.document.id.eq(documentId))
+                .join(stt.sttTask, sttTask).fetchJoin()
+                .where(stt.sttTask.recording.document.id.eq(documentId))
                 .fetch();
     }
 }
