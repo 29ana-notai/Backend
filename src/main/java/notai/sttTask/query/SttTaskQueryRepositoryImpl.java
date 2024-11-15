@@ -16,10 +16,11 @@ public class SttTaskQueryRepositoryImpl implements SttTaskQueryRepository {
     @Override
     public TaskStatus getTaskStatusByDocumentIdAndPageNumber(Long documentId, Integer pageNumber) {
         return queryFactory
-                .select(stt.sttTask.status)
-                .from(stt)
-                .where(stt.sttTask.recording.document.id.eq(documentId)
+                .select(sttTask.status)
+                .from(sttTask)
+                .join(stt).on(stt.sttTask.eq(sttTask))
+                .where(sttTask.recording.document.id.eq(documentId)
                         .and(stt.pageNumber.eq(pageNumber)))
-                .fetchFirst();
+                .fetchOne();
     }
 } 

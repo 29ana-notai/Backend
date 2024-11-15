@@ -18,7 +18,8 @@ public class SttQueryRepositoryImpl implements SttQueryRepository {
                 .selectFrom(stt)
                 .join(stt.sttTask, sttTask).fetchJoin()
                 .where(stt.sttTask.recording.document.id.eq(documentId)
-                                                        .and(stt.pageNumber.eq(pageNumber)))
+                        .and(stt.pageNumber.eq(pageNumber)))
+                .orderBy(stt.pageNumber.asc())
                 .fetch();
     }
 
@@ -28,6 +29,7 @@ public class SttQueryRepositoryImpl implements SttQueryRepository {
                 .selectFrom(stt)
                 .join(stt.sttTask, sttTask).fetchJoin()
                 .where(stt.sttTask.recording.document.id.eq(documentId))
+                .orderBy(stt.pageNumber.asc())
                 .fetch();
     }
 }
