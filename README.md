@@ -3,15 +3,15 @@
 ![image](https://github.com/user-attachments/assets/b3d84499-a30d-4649-abfc-e4599f2594b2)
 
 ## 목차
-- [🔹 NOTAI 를 소개합니다!](#-notai-를-소개합니다-)
-- [👥 팀원 ](#-팀원-)
-- [💼 핵심 기능 ](#-핵심-기능-)
-- [🔗 링크 모음 ](#-링크-모음)
-- [📁 파일구조 ](#-파일구조-)
-- [💠 ERD ](#-erd-)
-- [📄 API 모아보기 ](#-api-모아보기)
-- [⚙️ 기술스택 ](#%EF%B8%8F-기술스택-%EF%B8%8F)
-- [☁️ 추후 개발예정 기능 ](#%EF%B8%8F-추후-개발예정-기능-%EF%B8%8F)
+- [🔹 NOTAI 소개](#-notai-소개)
+- [👥 팀원](#-팀원)
+- [📌 핵심 기능](#-핵심-기능)
+- [🖇️ 링크 모음](#️-링크-모음)
+- [📁 파일구조](#-파일구조)
+- [💠 ERD](#-erd)
+- [📄 API 모아보기](#-api-모아보기)
+- [🛠️ 기술스택](#️-기술스택)
+- [☁️ 각 트랙별 코드 설명](#️-각-트랙별-코드-설명)
 
 <br>
 <br>
@@ -82,14 +82,14 @@
 <br>
 
 # 🖇️ 링크 모음
-
-|구분 |  | 링크 |
-|--------------|----|----------|
-| 앱 다운로드(원스토어) 링크 | ➡️ | [앱 다운로드 링크 <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Mobile%20Phone%20with%20Arrow.png" alt="Mobile Phone with Arrow" width="25" height="25" />](https://onesto.re/0000779576) |
-| 소개 자료 | ➡️ | [소개 자료 링크](https://www.canva.com/design/DAGWX39vH6w/nzAtcH09BaQlGldnBlVIfw/view?utm_content=DAGWX39vH6w&utm_campaign=designshare&utm_medium=link&utm_source=editor) |
-| ERD 설계서 | ➡️ | [ERD 설계서 링크](https://www.erdcloud.com/d/Tndj8pDGQq5sokaLs) |
-| Figma 기획 파일 | ➡️ | [Figma 기획 파일 링크](https://www.figma.com/design/Mq7XxiwzjEsm2HR0Z15lh/NOTAI_v2?node-id=1%3A8&t=4UGD4rPCtVzpqJa-1) |
-
+| 구분              |  | 링크                                                                                                                                                                                                                                                                                              |
+|-----------------|----|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 앱 다운로드(원스토어) 링크 | ➡️ | [앱 다운로드 링크 <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Mobile%20Phone%20with%20Arrow.png" alt="Mobile Phone with Arrow" width="25" height="25" />](https://onesto.re/0000779576)                                                                            |
+| 소개 자료           | ➡️ | [소개 자료 링크](https://www.canva.com/design/DAGWX39vH6w/nzAtcH09BaQlGldnBlVIfw/view?utm_content=DAGWX39vH6w&utm_campaign=designshare&utm_medium=link&utm_source=editor)                                                                                                                             |
+| ERD 설계서         | ➡️ | [ERD 설계서 링크](https://www.erdcloud.com/d/Tndj8pDGQq5sokaLs)                                                                                                                                                                                                                                      |
+| Figma 기획 파일     | ➡️ | [Figma 기획 파일 링크](https://www.figma.com/design/Mg7XxixwZjEsm2HR0Z15lh/NOTAI_v2?node-id=1-3&t=uZTAsKdk558vKEAr-1)                                                                                                                                                                                 |
+| 백엔드 서버 URL      | ➡️ | [http://121.183.242.176](http://121.183.242.176)                                                                                                                                                                                                                                                |
+| API 문서(Swagger) | ➡️ | [http://121.183.242.176/swagger-ui/index.html#/annotation-controller/getAnnotations](http://121.183.242.176/swagger-ui/index.html#/annotation-controller/getAnnotations)                                                                                                                        |
 <br>
 
 # 📁 파일구조
@@ -310,7 +310,7 @@
 <br>
 
 
-# 🛠️ 기술스택 🛠️
+# 🛠️ 기술스택
 ![image](https://github.com/user-attachments/assets/b001bb8b-950a-493a-900b-3e0094a60194)
 
 <br>
@@ -368,7 +368,7 @@
 <br>
 
 
-# 각 트랙별 코드 설명
+# ☁️ 각 트랙별 코드 설명
 
 ## Android
 
