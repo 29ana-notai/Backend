@@ -4,6 +4,7 @@ package notai.common.exception;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import notai.client.slack.SlackWebHookClient;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -25,47 +26,60 @@ import java.util.Map;
 @RestControllerAdvice
 public class ExceptionControllerAdvice extends ResponseEntityExceptionHandler {
 
+    private final SlackWebHookClient slackWebHookClient;
+
     @ExceptionHandler(ApplicationException.class)
     ResponseEntity<ExceptionResponse> handleException(HttpServletRequest request, ApplicationException e) {
 
-        log.info("잘못된 요청이 들어왔습니다. uri: {} {},  내용: {}",
-                request.getMethod(), request.getRequestURI(), e.getMessage());
+        log.info("잘못된 요청이 들어왔습니다. uri: {} {},  내용: {}", request.getMethod(), request.getRequestURI(), e.getMessage());
+
+        slackWebHookClient.sendToInfoChannel(
+                "잘못된 요청이 들어왔습니다.\n" +
+                        "uri: " + request.getMethod() + " " + request.getRequestURI() + "\n" +
+                        "내용: " + e.getMessage()
+        );
 
         requestLogging(request);
 
-        return ResponseEntity.status(e.getCode())
-                .body(new ExceptionResponse(e.getMessage()));
+        return ResponseEntity.status(e.getCode()).body(new ExceptionResponse(e.getMessage()));
     }
 
     @ExceptionHandler(Exception.class)
     ResponseEntity<ExceptionResponse> handleException(HttpServletRequest request, Exception e) {
         log.error("예상하지 못한 예외가 발생했습니다. uri: {} {}, ", request.getMethod(), request.getRequestURI(), e);
 
+        slackWebHookClient.sendToErrorChannel(
+                "예상하지 못한 예외가 발생했습니다.\n" +
+                        "uri: " + request.getMethod() + " " + request.getRequestURI() + "\n" +
+                        "내용: " + e.getMessage()
+        );
+
         requestLogging(request);
-        return ResponseEntity.internalServerError()
-                .body(new ExceptionResponse(e.getMessage()));
+        return ResponseEntity.internalServerError().body(new ExceptionResponse(e.getMessage()));
     }
 
     @Override
     protected ResponseEntity<Object> handleNoResourceFoundException(
-            NoResourceFoundException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+            NoResourceFoundException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request
+    ) {
         return new ResponseEntity<>(status);
     }
 
     @Override
     protected ResponseEntity<Object> handleExceptionInternal(
-            Exception e,
-            Object body,
-            HttpHeaders headers,
-            HttpStatusCode statusCode,
-            WebRequest webRequest
+            Exception e, Object body, HttpHeaders headers, HttpStatusCode statusCode, WebRequest webRequest
     ) {
         HttpServletRequest request = ((ServletWebRequest) webRequest).getRequest();
         log.error("예외가 발생했습니다. uri: {} {}, ", request.getMethod(), request.getRequestURI(), e);
 
+        slackWebHookClient.sendToErrorChannel(
+                "예외가 발생했습니다.\n" +
+                        "uri: " + request.getMethod() + " " + request.getRequestURI() + "\n" +
+                        " 내용: " + e.getMessage()
+        );
+
         requestLogging(request);
-        return ResponseEntity.status(statusCode)
-                .body(new ExceptionResponse(e.getMessage()));
+        return ResponseEntity.status(statusCode).body(new ExceptionResponse(e.getMessage()));
     }
 
 
